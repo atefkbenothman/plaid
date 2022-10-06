@@ -4,5 +4,6 @@
 
 ```
 todo:
+[ ] setup auth
 [o] setup repo
 ```

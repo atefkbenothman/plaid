@@ -1,0 +1,11 @@
+# plaid
+plaid_python==9.1.0
+
+# server
+fastapi==0.85.0
+
+# other
+flake8==3.9.2
+tox==3.24.3
+pytest==6.2.5
+pytest-cov==2.12.1

@@ -1,0 +1,11 @@
+pyproject.toml
+setup.cfg
+setup.py
+src/plaid/__init__.py
+src/plaid/auth.py
+src/plaid.egg-info/PKG-INFO
+src/plaid.egg-info/SOURCES.txt
+src/plaid.egg-info/dependency_links.txt
+src/plaid.egg-info/not-zip-safe
+src/plaid.egg-info/requires.txt
+src/plaid.egg-info/top_level.txt

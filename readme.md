@@ -6,12 +6,14 @@
 todo:
   development:
   [o] setup auth
-  [ ] setup pyproject, setup.py, setup.cfg, tox
-  [ ] review python automation
+  [x] setup pyproject, setup.py, setup.cfg, flake8
+  [x] setup tests
+  [x] review python automation
 
   git:
-  [o] setup repo
+  [x] setup repo
 
 notes:
-[ ] example note
+- to run tests: "pytest tests/"
+- to run linter: "flake8 src/"
 ```

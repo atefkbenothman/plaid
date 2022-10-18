@@ -7,15 +7,26 @@
 ```
 todo:
   development:
-  [o] setup auth
-  [x] setup pyproject, setup.py, setup.cfg, flake8
-  [x] setup tests
-  [x] review python automation
+    [ ] setup docker containers for each service
+    [x] setup pyproject, setup.py, setup.cfg, flake8
+    [x] setup tests
+    [x] review python automation
 
   git:
-  [x] setup repo
+    [x] setup repo
 
 notes:
-- to run tests: "pytest tests/"
-- to run linter: "flake8 src/"
+- to run tests:
+    pytest tests/
+
+- to run linter:
+    flake8 src/
+
+- to run backend:
+    cd backend/src/plaid
+    python3 -m uvicorn server:app --reload
+
+- to run frontend:
+    cd frontend/app
+    npm start
 ```

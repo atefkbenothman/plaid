@@ -10,6 +10,22 @@ const AccountList = () => {
       .then((res) => res.json())
       .then((data) => {
         setAccounts(data["accounts"]);
+      })
+      .catch((error) => {
+        console.log(error);
+        const accounts = [
+          {
+            "account_id": "123",
+            "name": "test name",
+            "official_name": "test official_name",
+            "subtype": "test subtype",
+            "balances": {
+              "available": 100,
+              "current": 110,
+            }
+          }
+        ];
+        setAccounts(accounts);
       });
   }, []);
 
@@ -21,7 +37,10 @@ const AccountList = () => {
           <div className="card m-2">
             <div className="card-body">
               <p className="card-title fs-3 fw-bold">{account.name}</p>
-              <p className="card-subtitle mb-2 text-muted">{account.official_name} ({account.subtype})</p>
+              <p className="card-subtitle mb-3 text-muted">{account.official_name} ({account.subtype})</p>
+              <p className="card-text fw-bold fs-6">Balance</p>
+              <p className="card-text fs-6">current: ${account.balances.current}</p>
+              <p className="card-text">available: ${account.balances.available}</p>
             </div>
           </div>
         </div>
@@ -39,6 +58,21 @@ const TransactionList = () => {
       .then((res) => res.json())
       .then((data) => {
         setTransactions(data["transactions"])
+      })
+      .catch((error) => {
+        console.log(error);
+        const transactions = [
+          {
+            "account_id": "123",
+            "amount": 123,
+            "category": ["test_cat_1", "test_cat_2"],
+            "date": "2020-01-01",
+            "name": "test_name",
+            "merchant_name": "test merchant_name",
+            "account_owner": "test account_owner",
+          }
+        ];
+        setTransactions(transactions);
       });
   }, []);
 
@@ -143,6 +177,11 @@ export function HomePage() {
         <div className="col">
           <button className="btn btn-primary btn-sm" onClick={() => open()}>
             Link Account
+          </button>
+        </div>
+        <div className="col">
+          <button className="btn btn-danger btn-sm" onClick={() => setHasAccessToken(true)}>
+            Debug
           </button>
         </div>
       </div>

@@ -57,10 +57,22 @@ const TransactionList = () => {
     fetch("http://localhost:8000/api/transactions")
       .then((res) => res.json())
       .then((data) => {
-        setTransactions(data["transactions"])
+        setTransactions(data["transactions"]);
       })
       .catch((error) => {
         console.log(error);
+        const accounts = [
+          {
+            "account_id": "123",
+            "name": "test name",
+            "official_name": "test official_name",
+            "subtype": "test subtype",
+            "balances": {
+              "available": 100,
+              "current": 110,
+            }
+          }
+        ];
         const transactions = [
           {
             "account_id": "123",
@@ -85,7 +97,7 @@ const TransactionList = () => {
             <thead className="table-dark">
               <tr>
                 <th scope="col">account id</th>
-                <th scope="col">account owner</th>
+                {/* <th scope="col">account owner</th> */}
                 <th scope="col">amount</th>
                 <th scope="col">merchant name</th>
                 <th scope="col">category</th>
@@ -96,10 +108,10 @@ const TransactionList = () => {
               {transactions.map((transaction, idx) => (
                 <tr>
                   <td>{transaction.account_id}</td>
-                  <td>{transaction.account_owner}</td>
+                  {/* <td>{transaction.account_owner}</td> */}
                   <td>${transaction.amount}</td>
                   <td>{transaction.merchant_name}</td>
-                  <td>{transaction.category}</td>
+                  <td>{transaction.category.join()}</td>
                   <td>{transaction.date}</td>
                 </tr>
               ))}

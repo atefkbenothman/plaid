@@ -84,10 +84,10 @@ class PlaidManager:
     set the access token.
     """
     try:
-      exhange_request = ItemPublicTokenExchangeRequest(
+      exchange_request = ItemPublicTokenExchangeRequest(
         public_token=link_token
       )
-      exchange_response = self.client.item_public_token_exchange(exhange_request)
+      exchange_response = self.client.item_public_token_exchange(exchange_request)
       access_token = exchange_response["access_token"]
       item_id = exchange_response["item_id"]
       self.access_token = access_token

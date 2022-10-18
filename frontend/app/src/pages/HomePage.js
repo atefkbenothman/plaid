@@ -81,6 +81,7 @@ const TransactionList = () => {
 
 export function HomePage() {
   const [linkToken, setLinkToken] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
   const [hasAccessToken, setHasAccessToken] = useState(false);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ export function HomePage() {
   }, []);
 
   const onSuccess = React.useCallback((public_token, metadata) => {
+    setAccessToken(public_token);
     fetch("http://localhost:8000/api/set_access_token", {
       method: "POST",
       headers: {
@@ -129,6 +131,10 @@ export function HomePage() {
           <div className="d-flex">
             <p className="fw-bold">link_token:</p>
             <p className="px-2">{linkToken}</p>
+          </div>
+          <div className="d-flex">
+            <p className="fw-bold">access_token:</p>
+            <p className="px-2">{accessToken}</p>
           </div>
         </div>
       </div>

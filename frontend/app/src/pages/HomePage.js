@@ -126,6 +126,15 @@ export function HomePage() {
 
       <div className="row">
         <div className="col">
+          <div className="d-flex">
+            <p className="fw-bold">link_token:</p>
+            <p className="px-2">{linkToken}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col">
           <button className="btn btn-primary btn-sm" onClick={() => open()}>
             Link Account
           </button>

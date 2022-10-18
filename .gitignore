@@ -1,0 +1,10 @@
+# envionment variables
+.env
+
+# virtual environment
+venv/
+
+# misc
+.pytest_cache/
+*.egg-info/
+.vscode/

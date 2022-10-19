@@ -2,11 +2,17 @@ import React, { useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
 
 
-const AccountList = () => {
+const AccountList = (props) => {
   const [accounts, setAccounts] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/accounts")
+    fetch("http://localhost:8000/api/accounts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: props.token }),
+    })
       .then((res) => res.json())
       .then((data) => {
         setAccounts(data["accounts"]);
@@ -16,18 +22,28 @@ const AccountList = () => {
         const accounts = [
           {
             "account_id": "123",
-            "name": "test name",
-            "official_name": "test official_name",
-            "subtype": "test subtype",
+            "name": "Name1",
+            "official_name": "officlaname1",
+            "subtype": "subtype1",
             "balances": {
               "available": 100,
               "current": 110,
-            }
+            },
+          },
+          {
+            "account_id": "789",
+            "name": "Name2",
+            "official_name": "OfficialName2",
+            "subtype": "Subtype2",
+            "balances": {
+              "available": 200,
+              "current": 220,
+            },
           }
         ];
         setAccounts(accounts);
       });
-  }, []);
+  }, [props.token]);
 
   return (
     <div>
@@ -50,29 +66,48 @@ const AccountList = () => {
 };
 
 
-const TransactionList = () => {
+const TransactionList = (props) => {
+  const [accounts, setAccounts] = useState({});
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/transactions")
+    fetch("http://localhost:8000/api/transactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: props.token }),
+    })
       .then((res) => res.json())
       .then((data) => {
+        setAccounts(data["accounts"]);
         setTransactions(data["transactions"]);
       })
       .catch((error) => {
         console.log(error);
-        const accounts = [
-          {
+        const accounts = {
+          "123": {
             "account_id": "123",
-            "name": "test name",
-            "official_name": "test official_name",
-            "subtype": "test subtype",
+            "name": "name1",
+            "official_name": "officlaname1",
+            "subtype": "subtype1",
             "balances": {
               "available": 100,
               "current": 110,
-            }
+            },
+          },
+          "456": {
+            "account_id": "789",
+            "name": "Name2",
+            "official_name": "OfficialName2",
+            "subtype": "Subtype2",
+            "balances": {
+              "available": 200,
+              "current": 220,
+            },
           }
-        ];
+        };
+        setAccounts(accounts);
         const transactions = [
           {
             "account_id": "123",
@@ -86,38 +121,36 @@ const TransactionList = () => {
         ];
         setTransactions(transactions);
       });
-  }, []);
+  }, [props.token]);
 
   return (
     <div>
-      <p className="fs-3">Transactions</p>
-      <div className="card m-2">
-        <div className="card-body">
-          <table className="table table-bordered table-sm table-striped">
-            <thead className="table-dark">
+      <p className="fs-3" c>Transactions</p>
+      <div className="m-2">
+        <table className="table table-bordered table-sm table-striped">
+          <thead className="table-dark">
+            <tr>
+              <th scope="col">account</th>
+              {/* <th scope="col">account owner</th> */}
+              <th scope="col">amount</th>
+              <th scope="col">merchant</th>
+              <th scope="col">category</th>
+              <th scope="col">date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((transaction, idx) => (
               <tr>
-                <th scope="col">account id</th>
-                {/* <th scope="col">account owner</th> */}
-                <th scope="col">amount</th>
-                <th scope="col">merchant name</th>
-                <th scope="col">category</th>
-                <th scope="col">date</th>
+                <td>{accounts[transaction.account_id].name}</td>
+                {/* <td>{transaction.account_owner}</td> */}
+                <td>${transaction.amount}</td>
+                <td>{transaction.merchant_name}</td>
+                <td>{transaction.category.join()}</td>
+                <td>{transaction.date}</td>
               </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction, idx) => (
-                <tr>
-                  <td>{transaction.account_id}</td>
-                  {/* <td>{transaction.account_owner}</td> */}
-                  <td>${transaction.amount}</td>
-                  <td>{transaction.merchant_name}</td>
-                  <td>{transaction.category.join()}</td>
-                  <td>{transaction.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )
@@ -127,6 +160,7 @@ const TransactionList = () => {
 
 export function HomePage() {
   const [linkToken, setLinkToken] = useState(null);
+  const [publicToken, setPublicToken] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [hasAccessToken, setHasAccessToken] = useState(false);
 
@@ -137,11 +171,11 @@ export function HomePage() {
       .then((res) => res.json())
       .then((data) => {
         setLinkToken(data["link_token"]);
-      })
+      });
   }, []);
 
   const onSuccess = React.useCallback((public_token, metadata) => {
-    setAccessToken(public_token);
+    setPublicToken(public_token);
     fetch("http://localhost:8000/api/set_access_token", {
       method: "POST",
       headers: {
@@ -149,9 +183,11 @@ export function HomePage() {
       },
       body: JSON.stringify({ public_token }),
     })
-      .then(() => {
+      .then((res) => res.json())
+      .then((data) => {
+        setAccessToken(data["access_token"]);
         setHasAccessToken(true);
-      });
+      })
   }, []);
 
   const config = {
@@ -162,6 +198,13 @@ export function HomePage() {
 
   const { open, ready } = usePlaidLink(config);
 
+  const linkAccount = () => {
+    open();
+  }
+
+  const debug = () => {
+    setHasAccessToken(true);
+  }
 
   return (
     <div className="container">
@@ -179,20 +222,24 @@ export function HomePage() {
             <p className="px-2">{linkToken}</p>
           </div>
           <div className="d-flex">
+            <p className="fw-bold">public_token:</p>
+            <p className="px-2">{publicToken}</p>
+          </div>
+          <div className="d-flex">
             <p className="fw-bold">access_token:</p>
             <p className="px-2">{accessToken}</p>
           </div>
         </div>
       </div>
 
-      <div className="row">
-        <div className="col">
-          <button className="btn btn-primary btn-sm" onClick={() => open()}>
+      <div className="row p-0">
+        <div className="col-md-2">
+          <button className="btn btn-primary btn-sm text-nowrap" onClick={linkAccount}>
             Link Account
           </button>
         </div>
         <div className="col">
-          <button className="btn btn-danger btn-sm" onClick={() => setHasAccessToken(true)}>
+          <button className="btn btn-danger btn-sm" onClick={debug}>
             Debug
           </button>
         </div>
@@ -204,8 +251,8 @@ export function HomePage() {
             hasAccessToken ?
               (
                 <div className="d-grid gap-3">
-                  <AccountList />
-                  <TransactionList />
+                  <AccountList token={accessToken} />
+                  <TransactionList token={accessToken} />
                 </div>
               ) :
               (

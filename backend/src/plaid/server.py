@@ -58,3 +58,13 @@ def get_transactions(body: dict):
   response = plaid_client.get_transactions(access_token)
   return response
 
+
+@app.post("/api/chart/summary")
+def get_summary_chart(body: dict):
+  """
+  call plaid client to retrieve the datasets needed for the summary
+  chart.
+  """
+  access_token = body["access_token"]
+  response = plaid_client.get_category_chart_data(access_token)
+  return response

@@ -31,6 +31,33 @@ hosts = {
 }
 
 
+def retrieve_category(category_name: str) -> str:
+  """
+  custom category lookup.
+  """
+  cats = {
+    "wants": [
+      "travel",
+      "taxi",
+      "food and drink",
+      "restaurants",
+      "fast food",
+      "cofee shop",
+    ],
+    "needs": [
+      "payment",
+      "credit card",
+      "credit",
+      "transfer",
+    ]
+  }
+  for cat in cats:
+    for sub_cat in cats[cat]:
+      if category_name.lower() == sub_cat:
+        return cat
+  return "no-cat"
+
+
 class PlaidClient:
   """
   custom client that will interact with the plaid servers.
@@ -89,6 +116,18 @@ class PlaidClient:
       return e
 
 
+  def get_categories(self) -> dict:
+    """
+    get information on categories returned by plaid.
+    """
+    try:
+      response = self.client.categories_get({})
+      data = response.to_dict()
+      return data
+    except plaid.ApiException as e:
+      return e
+
+
   def get_accounts(self, access_token: str) -> dict:
     """
     get all accounts data.
@@ -123,6 +162,51 @@ class PlaidClient:
         acc_id = acc["account_id"]
         accs[acc_id] = acc
       data["accounts"] = accs
+      return data
+    except plaid.ApiException as e:
+      return e
+
+
+  def get_category_chart_data(self, access_token: str) -> dict:
+    """
+    categorize all transactions into our categories and calculate the totals.
+
+    labels: [food, gas, wants, misc, rent, car_insurance, student_loans]
+    data: [10, 5, 100, 70, 20, 10, 80],
+    """
+    labels = ["wants", "needs", "savings", "no-cat"]
+    totals = {
+      "wants": 0,
+      "needs": 0,
+      "savings": 0,
+      "no-cat": 0,
+    }
+    colors =  [
+      "rgba(255, 99, 132, 0.2)",
+      "rgba(54, 162, 235, 0.2)",
+      "rgba(255, 206, 86, 0.2)",
+      "rgba(75, 192, 192, 0.2)",
+    ]
+    try:
+      data = self.get_transactions(access_token)
+      accounts = data["accounts"]
+      transactions = data["transactions"]
+      for transaction in transactions:
+        amount = transaction["amount"]
+        for category in transaction["category"]:
+          cat = retrieve_category(category)
+          totals[cat] += abs(amount)
+      totals_data = [totals["wants"], totals["needs"], totals["savings"], totals["no-cat"]]
+      data = {
+        "labels": labels,
+        "datasets": [
+          {
+            "label": "categories",
+            "data": totals_data,
+            "backgroundColor": colors
+          }
+        ]
+      }
       return data
     except plaid.ApiException as e:
       return e

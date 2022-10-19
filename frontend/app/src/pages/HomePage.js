@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 
 const AccountList = (props) => {
@@ -64,6 +68,46 @@ const AccountList = (props) => {
     </div>
   )
 };
+
+
+const SummaryChart = (props) => {
+  const [hasData, setHasData] = useState(false);
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/chart/summary", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ access_token: props.token }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+        setHasData(true);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+  }, [props.token]);
+
+  return (
+    <div>
+      <p className="fs-3">Summary</p>
+      {
+        hasData ? (
+          <div>
+            <Doughnut data={data} />
+          </div>
+        ) : (
+          <div>
+          </div>
+        )
+      }
+    </div>
+  )
+}
 
 
 const TransactionList = (props) => {
@@ -152,6 +196,7 @@ const TransactionList = (props) => {
           </tbody>
         </table>
       </div>
+      <SummaryChart token={props.token} />
     </div>
   )
 }
@@ -196,7 +241,7 @@ export function HomePage() {
     onSuccess,
   }
 
-  const { open, ready } = usePlaidLink(config);
+  const { open } = usePlaidLink(config);
 
   const linkAccount = () => {
     open();

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from client import PlaidManager
+from client import PlaidClient
 
 app = FastAPI()
 
@@ -17,40 +17,44 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-plaid_manager = PlaidManager()
+plaid_client = PlaidClient()
+
 
 @app.post("/api/create_link_token")
 def create_link_token():
   """
-  create a link token.
+  call the plaid client to create a link token.
   """
-  resp = plaid_manager.create_link_token()
-  return resp
+  response = plaid_client.create_link_token()
+  return response
 
 
 @app.post("/api/set_access_token")
-def set_access_token(token: dict):
+def set_access_token(body: dict):
   """
   set the access token retrieved from /api/create_link_token.
   """
-  public_token = token["public_token"]
-  resp = plaid_manager.set_access_token(public_token)
-  return resp
+  public_token = body["public_token"]
+  response = plaid_client.set_access_token(public_token)
+  return response
 
 
-@app.get("/api/accounts")
-def get_accounts():
+@app.post("/api/accounts")
+def get_accounts(body: dict):
   """
-  get accounts.
+  call plaid client to retrieve account data.
   """
-  resp = plaid_manager.get_accounts()
-  return resp
+  access_token = body["access_token"]
+  response = plaid_client.get_accounts(access_token)
+  return response
 
 
-@app.get("/api/transactions")
-def get_transactions():
+@app.post("/api/transactions")
+def get_transactions(body: dict):
   """
-  get transactions.
+  call plaid client to retrieve transactions data.
   """
-  resp = plaid_manager.get_transactions()
-  return resp
+  access_token = body["access_token"]
+  response = plaid_client.get_transactions(access_token)
+  return response
+

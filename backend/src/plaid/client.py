@@ -12,15 +12,16 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
-from plaid.model.link_token_get_request import LinkTokenGetRequest
 
 load_dotenv()
 
 PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID")
+PLAID_CLIENT_NAME = os.getenv("PLAID_CLIENT_NAME")
+PLAID_CLIENT_LANG = os.getenv("PLAID_CLIENT_LANG")
 PLAID_SECRET = os.getenv("PLAID_SECRET")
 PLAID_ENV = os.getenv("PLAID_ENV")
-PLAID_PRODUCTS = os.getenv("PLAID_PRODUCTS")
-PLAID_COUNTRY_CODES = os.getenv("PLAID_COUNTRY_CODES")
+PLAID_PRODUCTS = os.getenv("PLAID_PRODUCTS").split(",")
+PLAID_COUNTRY_CODES = os.getenv("PLAID_COUNTRY_CODES").split(",")
 PLAID_VERSION = "2020-09-14"
 
 hosts = {
@@ -30,7 +31,10 @@ hosts = {
 }
 
 
-class PlaidManager:
+class PlaidClient:
+  """
+  custom client that will interact with the plaid servers.
+  """
 
   def __init__(self):
     configuration = plaid.Configuration(
@@ -43,31 +47,22 @@ class PlaidManager:
     )
     api_client = plaid.ApiClient(configuration)
     self.client = plaid_api.PlaidApi(api_client)
-    self.access_token = None
 
 
-  def get_access_token(self) -> str:
-    if self.access_token is not None:
-      return self.access_token
-    raise Exception("not a valid access token")
-
-
-  def create_link_token(self):
+  def create_link_token(self) -> dict:
     """
-    create a link token based on the project.
+    generate a link token that will be used to create the Link widget.
     """
-    products = [Products("auth"), Products("transactions")]
-    client_name = "Plaid Test Quickstart"
-    language = "en"
-    country_codes = [CountryCode("US")]
-    user = LinkTokenCreateRequestUser(
-      client_user_id=PLAID_CLIENT_ID
-    )
+    products = []
+    for product in PLAID_PRODUCTS:
+      products.append(Products(product))
+    country_codes = list(map(lambda x: CountryCode(x), PLAID_COUNTRY_CODES))
+    user = LinkTokenCreateRequestUser(client_user_id=PLAID_CLIENT_ID)
     try:
       request = LinkTokenCreateRequest(
         products=products,
-        client_name=client_name,
-        language=language,
+        client_name=PLAID_CLIENT_NAME,
+        language=PLAID_CLIENT_LANG,
         country_codes=country_codes,
         user=user
       )
@@ -79,50 +74,55 @@ class PlaidManager:
       return e
 
 
-  def set_access_token(self, link_token: str):
+  def set_access_token(self, public_token: str) -> dict:
     """
-    set the access token.
+    exchange public token for an access_token
     """
     try:
       exchange_request = ItemPublicTokenExchangeRequest(
-        public_token=link_token
+        public_token=public_token
       )
       exchange_response = self.client.item_public_token_exchange(exchange_request)
-      access_token = exchange_response["access_token"]
-      item_id = exchange_response["item_id"]
-      self.access_token = access_token
-      return exchange_response.to_dict()
+      data = exchange_response.to_dict()
+      return data
     except plaid.ApiException as e:
       return e
 
 
-  def get_accounts(self):
+  def get_accounts(self, access_token: str) -> dict:
     """
-    get accounts connected to the institution.
+    get all accounts data.
     """
     try:
-      request = AccountsGetRequest(
-        access_token=self.get_access_token()
-      )
-      accounts_response = self.client.accounts_get(request)
-      return accounts_response.to_dict()
+      request = AccountsGetRequest(access_token=access_token)
+      response = self.client.accounts_get(request)
+      data = response.to_dict()
+      return data
     except plaid.ApiException as e:
       return e
 
 
-  def get_transactions(self):
+  def get_transactions(self, access_token: str) -> dict:
     """
-    get transactions from an account.
+    get all transactions data.
     """
     start_date = datetime.date(2021, 1, 1)
     end_date = datetime.date(2022, 12, 30)
     try:
       request = TransactionsGetRequest(
-        access_token=self.get_access_token(),
+        access_token=access_token,
         start_date=start_date,
         end_date=end_date
       )
       response = self.client.transactions_get(request)
-      return response.to_dict()
+      data = response.to_dict()
+      # unpack accounts list
+      accounts: list = data["accounts"]
+      accs = {}
+      for acc in accounts:
+        acc_id = acc["account_id"]
+        accs[acc_id] = acc
+      data["accounts"] = accs
+      return data
     except plaid.ApiException as e:
       return e
